@@ -118,9 +118,6 @@ def resolverSistemaEliminacionGaussiana(A, b):
     '''
     B, c = triangsupMat(A,b)
 
-    print (format(B))
-    print (format(c))
-
     # return np.round(resolverPorSustitucion(B, c))
     return resolverPorSustitucion(B, c)
 
