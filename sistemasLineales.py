@@ -58,19 +58,6 @@ def triangsupMat(A, b):
       c[i] = c[i] - (mu*c[j])
   return B, c
 
-"""## Resolver por sustitución
-
-Resuelve un sistema de ecuaciones lineales mediante la sustitucion de variables.
-
-### Argumentos
-    A (np.array): Matriz de ecuaciones.
-    b (np.array): Vector de constantes.
-    forward (bool): Direccion de la resolucion. True: hacia arriba, False: hacia abajo.
-
-### Resultado
-    np.array: Vector de solucion.
-"""
-
 def resolverPorSustitucion(A, b, forward=False):
   """Resuelve un sistema de ecuaciones lineales mediante la sustitucion
   de variables.
@@ -93,17 +80,6 @@ def resolverPorSustitucion(A, b, forward=False):
 
   return x
 
-"""## Eliminación Gaussiana
-
-Resuelve el sistema de ecuaciones AX = B mediante el método de Gauss-Jordan
-
-### Argumentos
-A es una matriz de dimensión n x n
-b es una matriz de dimensión n x 1
-
-### Resultado
-Devuelve un vector de solución de AX = B
-"""
 
 def resolverSistemaEliminacionGaussiana(A, b):
     '''
@@ -117,24 +93,7 @@ def resolverSistemaEliminacionGaussiana(A, b):
     array: vector de solución
     '''
     B, c = triangsupMat(A,b)
-
-    # return np.round(resolverPorSustitucion(B, c))
     return resolverPorSustitucion(B, c)
-
-"""## Factorización LU
-
-Descompone una matriz cuadrada en su factorización LU.
-
-### Argunmentos
-
-* A: matriz de la matriz de ecuaciones
-
-### Resultado
-
-* L: matriz triangular inferior L
-* U: matriz triangular superior U
-
-"""
 
 def factolizarLU(A):
     '''
@@ -147,7 +106,6 @@ def factolizarLU(A):
         U (array): matriz U de la factorizacion LU
     '''
     (n,m) = A.shape
-
 
     if (m!=n):
         print ('La matriz no es cuadrada')
@@ -170,20 +128,6 @@ def factolizarLU(A):
     L = np.identity(n) + L # sumar matriz identidad
     return L, U
 
-"""## Resolver Sistema mediante Factorización LU
-
-Resuelve el sistema de ecuaciones lineales mediante el método de factorización LU.
-
-### Argumentos
-
-* `A`: matriz del sistema de ecuaciones lineales
-* `b`: vector de constantes del sistema de ecuaciones lineales
-
-### Resultado
-
-* `x`: vector de solución del sistema de ecuaciones lineales
-"""
-
 def resolverSistemaLU(A, b):
   '''
   Resuelve un sistema de ecuaciones lineales usando el metodo LU
@@ -198,21 +142,6 @@ def resolverSistemaLU(A, b):
   L, U = factolizarLU(A)
   y = resolverPorSustitucion(L,b, forward=True)
   return resolverPorSustitucion(U, y)
-
-"""## Factorización PALU
-
-Descompone una matriz cuadrada en su factorización LU usando permutaciones de filas.
-
-### Argumentos
-
-* `A`: matriz cuadrada
-
-### Resultados
-
-* `L`: matriz L
-* `U`: matriz U
-* `P`: permutaciones de filas
-"""
 
 def factolizarPALU(A):
     '''
@@ -265,20 +194,6 @@ def factolizarPALU(A):
     L = np.identity(n) + L # sumar matriz identidad
     return P, L, U
 
-"""## Resolver Sistema mediante factorización PALU
-
-Resuelve el sistema de ecuaciones lineales mediante el método de factorización PALU.
-
-### Argumentos
-
-* `A`: matriz de la ecuación a resolver.
-* `b`: vector de la ecuación a resolver.
-
-### Resultado
-
-* `x`: vector de solución.
-"""
-
 def resolverSistemaPALU(A, b):
   '''
   Resuelve un sistema de ecuaciones lineales mediante el método de PALU
@@ -296,8 +211,6 @@ def resolverSistemaPALU(A, b):
   # return np.round(resolverPorSustitucion(U, y))
 
 """# Métodos iterativos
-
-## Comprobar Matriz Diagonal Dominante
 """
 
 def comprobarMatrizDiagonalDominante(A, estricto = False):
@@ -327,35 +240,7 @@ def comprobarConvergenciaSolucion(A):
     print('Radio espectral: ', radioEspectral, 'converge:', radioEspectral <= 1)
     return radioEspectral < 1
 
-"""## Método Jacobi para resolver sistemas de ecuaciones lineales
 
-Resuelve un sistema de ecuaciones lineales de la forma:
-
-$$
-\begin{align}
-a_{11}x_1 + a_{12}x_2 + \cdots + a_{1n}x_n &= b_1 \\
-a_{21}x_1 + a_{22}x_2 + \cdots + a_{2n}x_n &= b_2 \\
-\vdots \\
-a_{m1}x_1 + a_{m2}x_2 + \cdots + a_{mn}x_n &= b_m
-\end{align}
-$$
-
-con $a_{ij}, b_i \in \mathbb{R}$ y $x_i \in \mathbb{R}$.
-
-### Argumentos
-
-* $a_{ij}$ es la matriz de coeficientes de la ecuación $i$ en la ecuación $j$.
-* $b_i$ es la constante de la ecuación $i$.
-* $iteraciones$ es el número de iteraciones que se realizarán.
-
-### Resultado
-
-* $x_i$ es la solución de la ecuación.
-
-
-"""
-
-#
 def resolverJacobi(A, b, iteraciones):
     '''
     Resuelve la matriz A de orden n x n mediante el método de Jacobi.
@@ -398,32 +283,6 @@ def resolverJacobi(A, b, iteraciones):
 
     return x
 
-"""## Método de Gauss-Seidel para resolver sistemas de ecuaciones lineales
-
-Resuelve un sistema de ecuaciones lineales de la forma:
-
-$$
-\begin{align}
-a_{11}x_1 + a_{12}x_2 + \cdots + a_{1n}x_n &= b_1 \\
-a_{21}x_1 + a_{22}x_2 + \cdots + a_{2n}x_n &= b_2 \\
-\vdots \\
-a_{m1}x_1 + a_{m2}x_2 + \cdots + a_{mn}x_n &= b_m
-\end{align}
-$$
-
-con $a_{ij}, b_i \in \mathbb{R}$ y $x_i \in \mathbb{R}$.
-
-### Argumentos
-
-* **$a_{ij}$**: matriz de coeficientes de la ecuación $i$ en $j$.
-* **$b_i$**: constante de la ecuación $i$.
-* **$iteraciones$**: número de iteraciones que se deben realizar.
-
-### Resultado
-
-* **$x_i$**: solución del sistema de ecuaciones.
-"""
-
 def resolverGaussSeidel(A, b, iteraciones):
     '''
     Resuelve un sistema de ecuaciones lineales mediante el método de Gauss-Seidel.
@@ -464,32 +323,6 @@ def resolverGaussSeidel(A, b, iteraciones):
 
     return x
 
-"""## Método SOR para resolver sistemas de ecuaciones lineales
-
-Resuelve un sistema de ecuaciones lineales de la forma:
-
-$$
-\begin{align}
-a_{11}x_1 + a_{12}x_2 + \cdots + a_{1n}x_n &= b_1 \\
-a_{21}x_1 + a_{22}x_2 + \cdots + a_{2n}x_n &= b_2 \\
-\vdots \\
-a_{m1}x_1 + a_{m2}x_2 + \cdots + a_{mn}x_n &= b_m
-\end{align}
-$$
-
-con $a_{ij}, b_i \in \mathbb{R}$ y $x_i \in \mathbb{R}$.
-
-### Argumentos
-
-- $a_{ij}$ son los coeficientes de la ecuación $i$ en la ecuación $j$.
-- $b_i$ son los constantes de la ecuación $i$.
-- $iteraciones$ es el número de iteraciones que se realizarán.
-- $w$ es
-
-### Resultado
-
-- $x_{k+1}$ es el resultado del sistema de ecuaciones lineales.
-"""
 
 def resolverSOR(A, b, iteraciones, w):
     '''
