@@ -3,139 +3,171 @@ import pytest
 from sistemasLineales import SistemaLineal
 
 sistemasValidos = [
-    (   
-        np.array([
-        [1.,0.,1.],
-        [2.,3.,-1.],
-        [1.,2.,1.],
-        ]),
-        np.array([2.,7.,6.])
+    (
+        np.array(
+            [
+                [1.0, 0.0, 1.0],
+                [2.0, 3.0, -1.0],
+                [1.0, 2.0, 1.0],
+            ]
+        ),
+        np.array([2.0, 7.0, 6.0]),
     ),
     (
-        np.array([
-            [1.0, 1.0,0.0,3.0],
-            [2.0,1.0,-1.0,1.0],
-            [3.0,-1.0,-1.0,2.0],
-            [-1.0,2.0,3.0,-1.0]
-        ]),
-        np.array([4,1,-3,4])
+        np.array(
+            [
+                [1.0, 1.0, 0.0, 3.0],
+                [2.0, 1.0, -1.0, 1.0],
+                [3.0, -1.0, -1.0, 2.0],
+                [-1.0, 2.0, 3.0, -1.0],
+            ]
+        ),
+        np.array([4, 1, -3, 4]),
     ),
     (
-        np.array([
-            [1.0, -1.0,2.0,-1.0],
-            [2.0,-2.0,3.0,-3.0],
-            [1.0,1.0,1.0,0.0],
-            [1.0,-1.0,4.0,3.0]
-        ]),
-        np.array([-8,-20,-2,4])
+        np.array(
+            [
+                [1.0, -1.0, 2.0, -1.0],
+                [2.0, -2.0, 3.0, -3.0],
+                [1.0, 1.0, 1.0, 0.0],
+                [1.0, -1.0, 4.0, 3.0],
+            ]
+        ),
+        np.array([-8, -20, -2, 4]),
     ),
 ]
 
 sistemasConSolucion = [
-    (   
-        np.array([
-        [1.,0.,1.],
-        [2.,3.,-1.],
-        [1.,2.,1.],
-        ]),
-        np.array([2.,7.,6.]),
-        np.array([1.,2.,1.])
+    (
+        np.array(
+            [
+                [1.0, 0.0, 1.0],
+                [2.0, 3.0, -1.0],
+                [1.0, 2.0, 1.0],
+            ]
+        ),
+        np.array([2.0, 7.0, 6.0]),
+        np.array([1.0, 2.0, 1.0]),
     ),
     (
-        np.array([
-            [1.0, 1.0,0.0,3.0],
-            [2.0,1.0,-1.0,1.0],
-            [3.0,-1.0,-1.0,2.0],
-            [-1.0,2.0,3.0,-1.0]
-        ]),
-        np.array([4,1,-3,4]),
-        np.array([-1., 2., 0., 1.])
+        np.array(
+            [
+                [1.0, 1.0, 0.0, 3.0],
+                [2.0, 1.0, -1.0, 1.0],
+                [3.0, -1.0, -1.0, 2.0],
+                [-1.0, 2.0, 3.0, -1.0],
+            ]
+        ),
+        np.array([4, 1, -3, 4]),
+        np.array([-1.0, 2.0, 0.0, 1.0]),
     ),
     (
-        np.array([
-            [1.0,-1.0,2.0,-1.0],
-            [2.0,-2.0,3.0,-3.0],
-            [1.0,1.0,1.0,0.0],
-            [1.0,-1.0,4.0,3.0]
-        ]),
-        np.array([-8,-20,-2,4]),
-        np.array([-7., 3., 2., 2.])
+        np.array(
+            [
+                [1.0, -1.0, 2.0, -1.0],
+                [2.0, -2.0, 3.0, -3.0],
+                [1.0, 1.0, 1.0, 0.0],
+                [1.0, -1.0, 4.0, 3.0],
+            ]
+        ),
+        np.array([-8, -20, -2, 4]),
+        np.array([-7.0, 3.0, 2.0, 2.0]),
     ),
 ]
 
 sistemasConSolucionLU = [
-    (   
-        np.array([
-        [1.,0.,1.],
-        [2.,3.,-1.],
-        [1.,2.,1.],
-        ]),
-        np.array([2.,7.,6.]),
-        np.array([1.,2.,1.])
+    (
+        np.array(
+            [
+                [1.0, 0.0, 1.0],
+                [2.0, 3.0, -1.0],
+                [1.0, 2.0, 1.0],
+            ]
+        ),
+        np.array([2.0, 7.0, 6.0]),
+        np.array([1.0, 2.0, 1.0]),
     ),
     (
-        np.array([
-            [1.0, 1.0,0.0,3.0],
-            [2.0,1.0,-1.0,1.0],
-            [3.0,-1.0,-1.0,2.0],
-            [-1.0,2.0,3.0,-1.0]
-        ]),
-        np.array([4,1,-3,4]),
-        np.array([-1., 2., 0., 1.])
+        np.array(
+            [
+                [1.0, 1.0, 0.0, 3.0],
+                [2.0, 1.0, -1.0, 1.0],
+                [3.0, -1.0, -1.0, 2.0],
+                [-1.0, 2.0, 3.0, -1.0],
+            ]
+        ),
+        np.array([4, 1, -3, 4]),
+        np.array([-1.0, 2.0, 0.0, 1.0]),
     ),
 ]
 
 sistemasConSolucionIterativa = [
-    (   
-        np.array([
-        [5.,-1.,3.],
-        [3.,6.,2.],
-        [2,2.,4.],
-        ]),
-        np.array([-4.,11.,6.]),
-        np.array([-1.,2.,1.])
+    (
+        np.array(
+            [
+                [5.0, -1.0, 3.0],
+                [3.0, 6.0, 2.0],
+                [2, 2.0, 4.0],
+            ]
+        ),
+        np.array([-4.0, 11.0, 6.0]),
+        np.array([-1.0, 2.0, 1.0]),
     ),
 ]
 
-sistemasInvalidos = [(
-    np.array([
-        [1.0, 1.0,0.0,3.0],
-        [2.0,1.0,-1.0,1.0],
-        [3.0,-1.0,-1.0,2.0],
-        [-1.0,2.0,3.0,-1.0],
-        [-1.0,2.0,3.0,-1.0]
-    ]),
-    np.array([4,1,-3,4]),
-    "La matriz de coeficientes no es cuadrada."), (
-        np.array([
-            [1.0, -1.0,2.0,-1.0, 1.0],
-            [2.0,-2.0,3.0,-3.0, 2.0],
-            [1.0,1.0,1.0,0.0, 1.0],
-            [1.0,-1.0,4.0,3.0, 4.0]
-        ]),
-        np.array([-8,-20,-2,4]), "La matriz de coeficientes no es cuadrada."), (
-        np.array([
-            [1.0, 1.0,0.0,3.0],
-            [2.0,1.0,-1.0,1.0],
-            [3.0,-1.0,-1.0,2.0],
-            [-1.0,2.0,3.0,-1.0]
-        ]),
-        np.array([-8,-20,-2,4, 12]), "El vector de términos independientes no es compatible con la matriz de coeficientes."
-    ), (
-        np.array([
-            [1.0, 1.0,0.0,3.0],
-            [2.0,1.0,-1.0,1.0],
-            [3.0,-1.0,-1.0,2.0],
-            [-1.0,2.0,3.0,-1.0]
-        ]),
-        np.array([-8,-20,-2]),
-        "El vector de términos independientes no es compatible con la matriz de coeficientes."
-    ), (
-        'A',
-        'b',
-        'Input variables must be numpy arrays.'
-    )
+sistemasInvalidos = [
+    (
+        np.array(
+            [
+                [1.0, 1.0, 0.0, 3.0],
+                [2.0, 1.0, -1.0, 1.0],
+                [3.0, -1.0, -1.0, 2.0],
+                [-1.0, 2.0, 3.0, -1.0],
+                [-1.0, 2.0, 3.0, -1.0],
+            ]
+        ),
+        np.array([4, 1, -3, 4]),
+        "La matriz de coeficientes no es cuadrada.",
+    ),
+    (
+        np.array(
+            [
+                [1.0, -1.0, 2.0, -1.0, 1.0],
+                [2.0, -2.0, 3.0, -3.0, 2.0],
+                [1.0, 1.0, 1.0, 0.0, 1.0],
+                [1.0, -1.0, 4.0, 3.0, 4.0],
+            ]
+        ),
+        np.array([-8, -20, -2, 4]),
+        "La matriz de coeficientes no es cuadrada.",
+    ),
+    (
+        np.array(
+            [
+                [1.0, 1.0, 0.0, 3.0],
+                [2.0, 1.0, -1.0, 1.0],
+                [3.0, -1.0, -1.0, 2.0],
+                [-1.0, 2.0, 3.0, -1.0],
+            ]
+        ),
+        np.array([-8, -20, -2, 4, 12]),
+        "El vector de términos independientes no es compatible con la matriz de coeficientes.",
+    ),
+    (
+        np.array(
+            [
+                [1.0, 1.0, 0.0, 3.0],
+                [2.0, 1.0, -1.0, 1.0],
+                [3.0, -1.0, -1.0, 2.0],
+                [-1.0, 2.0, 3.0, -1.0],
+            ]
+        ),
+        np.array([-8, -20, -2]),
+        "El vector de términos independientes no es compatible con la matriz de coeficientes.",
+    ),
+    ("A", "b", "Input variables must be numpy arrays."),
 ]
+
 
 class TestSistemasLineales:
     @pytest.mark.parametrize("A, b", sistemasValidos)
@@ -156,7 +188,6 @@ class TestSistemasLineales:
         sistema = SistemaLineal(A, b)
         solution = sistema.resolverPorEliminacionGaussiana()
         np.testing.assert_array_almost_equal(solution, expected_solution)
-
 
     @pytest.mark.parametrize("A, b, expected_solution", sistemasConSolucionLU)
     def test_solver_factorizacionLU(self, A, b, expected_solution):
@@ -185,5 +216,7 @@ class TestSistemasLineales:
     @pytest.mark.parametrize("A, b, expected_solution", sistemasConSolucionIterativa)
     def test_solver_metodoSOR(self, A, b, expected_solution):
         sistema = SistemaLineal(A, b)
-        solution = sistema.resolverPorMetodoSOR(iteraciones=11, tolerancia=1e-7, w=0.999)
+        solution = sistema.resolverPorMetodoSOR(
+            iteraciones=11, tolerancia=1e-7, w=0.999
+        )
         np.testing.assert_allclose(solution, expected_solution, rtol=1e-6)
