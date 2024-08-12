@@ -34,22 +34,14 @@ class SistemaLineal:
 
     def obtenerMatrizTriangularSuperiorAumentada(self):
         '''Obtiene la matriz triangular superior aumentada que representa al sistema.'''
-        triangularSuperior = np.copy(self.obtenerMatrizAumentada())
+        triangularSuperior = self.obtenerMatrizAumentada()
         for j in range(0, self.tamano-1): 
-          k = np.argmax(np.abs(triangularSuperior[j:self.tamano,j])) # maximo pivote por columna
-          k = k + j
+          k = self.__sistemaLineal__obtenerPosicionMaximoPivotePorColumna(triangularSuperior, j)
           triangularSuperior = self.__sistemaLineal__intercambiarFilas(triangularSuperior, j, k)
           for i in range(j+1, self.tamano):
             mu = triangularSuperior[i,j]/triangularSuperior[j,j] # calculo de multiplicadores
             triangularSuperior[i,:] = triangularSuperior[i,:] - (mu*triangularSuperior[j,:])
-        print(triangularSuperior)
         return triangularSuperior
-
-    def resolverPorEliminacionGaussiana(self):
-        '''Obtiene la resolución del sistema lineal mediante el método de eliminación gaussiana.'''
-        matrizSuperiorAumentada = self.obtenerMatrizTriangularSuperiorAumentada()
-        solucion = self.__sistemaLineal__resolverPorSustitucion(matrizSuperiorAumentada, direction='haciaAtras')
-        return solucion
 
     def obtenerFactorizacionLU(self):
         '''Obtiene la factorizacion LU de la matriz de coeficientes A.'''
@@ -57,18 +49,12 @@ class SistemaLineal:
         U = np.copy(self.A)
 
         for j in range(0, self.tamano-1):
-            k = np.argmax(np.abs(U[j:self.tamano,j])) # maximo pivote por columna
-            k=k+j
-
-            try:
-                for i in range(j+1, self.tamano):
-                    if (U[j,j] == 0):
-                        raise ValueError('La matriz no posee factorizacion LU')
-                    mu = U[i,j]/U[j,j] # calculo de multiplicadores
-                    U[i,:] = U[i,:] - (mu*U[j,:])
-                    L[i,j] = mu # asignacion de multiplicador
-            except:
-                raise ValueError('La matriz no posee factorizacion LU')
+            for i in range(j+1, self.tamano):
+                if (U[j,j] == 0):
+                    raise ValueError('La matriz no posee factorizacion LU')
+                mu = U[i,j]/U[j,j] # calculo de multiplicadores
+                U[i,:] = U[i,:] - (mu*U[j,:]) # aplicar operación en fila
+                L[i,j] = mu # asignacion de multiplicador
 
         L = np.identity(self.tamano) + L # sumar matriz identidad
         return L, U
@@ -80,8 +66,7 @@ class SistemaLineal:
         U = np.copy(self.A)
 
         for j in range(0, self.tamano-1):
-            k = np.argmax(np.abs(U[j:self.tamano,j])) # maximo pivote por columna
-            k=k+j
+            k = self.__sistemaLineal__obtenerPosicionMaximoPivotePorColumna(U, j)
 
             # Permutar matriz Superior
             U = self.__sistemaLineal__intercambiarFilas(U, j, k)
@@ -106,6 +91,12 @@ class SistemaLineal:
         Al = (np.tril(self.A) - D ) * -1
         Au = (np.triu(self.A) - D) * -1
         return D, Al, Au
+
+    def resolverPorEliminacionGaussiana(self):
+        '''Obtiene la resolución del sistema lineal mediante el método de eliminación gaussiana.'''
+        matrizSuperiorAumentada = self.obtenerMatrizTriangularSuperiorAumentada()
+        solucion = self.__sistemaLineal__resolverPorSustitucion(matrizSuperiorAumentada, direction='haciaAtras')
+        return solucion
 
     def resolverPorFactorizacionLU(self):
         '''Obtiene la solución del sistema lineal mediante el método de factorización LU.'''
@@ -212,6 +203,10 @@ class SistemaLineal:
                 return False
         return True
 
+    def __sistemaLineal__obtenerPosicionMaximoPivotePorColumna(self, matriz, columna):
+        '''Obtiene la posición del maximo pivote por columna.'''
+        posicion =  np.argmax(np.abs(matriz[columna:self.tamano,columna]))
+        return posicion + columna
 
     def __sistemaLineal__obtenerMatrizAumentada(self, matriz, columna):
         return np.copy(np.c_[matriz, columna])
