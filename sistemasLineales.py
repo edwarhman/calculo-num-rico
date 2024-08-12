@@ -9,6 +9,183 @@ Original file is located at
 
 import numpy as np
 
+class NoSolutionError(Exception): ...
+class SistemaLineal:
+    def __init__(self, A, b):
+        self.A = A
+        self.b = b
+
+        try:
+            m, n = A.shape
+            vector_size = b.size
+        except:
+            raise ValueError('Input variables must be numpy arrays.')
+
+        if(m!=n):
+            raise ValueError('La matriz de coeficientes no es cuadrada.')
+
+        if(n!=vector_size):
+            raise ValueError('El vector de términos independientes no es compatible con la matriz de coeficientes.')
+
+        self.tamano = n
+      
+    def obtenerMatrizAumentada(self):
+        return self.__sistemaLineal__obtenerMatrizAumentada(self.A, self.b)
+
+    def obtenerMatrizTriangularSuperiorAumentada(self):
+        triangularSuperior = np.copy(self.obtenerMatrizAumentada())
+        for j in range(0, self.tamano-1): 
+          k = np.argmax(np.abs(triangularSuperior[j:self.tamano,j])) # maximo pivote por columna
+          k = k + j
+          triangularSuperior = self.__sistemaLineal__intercambiarFilas(triangularSuperior, j, k)
+          for i in range(j+1, self.tamano):
+            mu = triangularSuperior[i,j]/triangularSuperior[j,j] # calculo de multiplicadores
+            triangularSuperior[i,:] = triangularSuperior[i,:] - (mu*triangularSuperior[j,:])
+        print(triangularSuperior)
+        return triangularSuperior
+
+    def resolverPorEliminacionGaussiana(self):
+       matrizSuperiorAumentada = self.obtenerMatrizTriangularSuperiorAumentada()
+       solucion = self.__sistemaLineal__resolverPorSustitucion(matrizSuperiorAumentada, direction='haciaAtras')
+       return solucion
+
+    def obtenerFactorizacionLU(self):
+        L = np.zeros((self.tamano, self.tamano))
+        U = np.copy(self.A)
+
+        for j in range(0, self.tamano-1):
+            k = np.argmax(np.abs(U[j:self.tamano,j])) # maximo pivote por columna
+            k=k+j
+
+            try:
+                for i in range(j+1, self.tamano):
+                    if (U[j,j] == 0):
+                        raise ValueError('La matriz no posee factorizacion LU')
+                    mu = U[i,j]/U[j,j] # calculo de multiplicadores
+                    U[i,:] = U[i,:] - (mu*U[j,:])
+                    L[i,j] = mu # asignacion de multiplicador
+            except:
+                raise ValueError('La matriz no posee factorizacion LU')
+
+        L = np.identity(self.tamano) + L # sumar matriz identidad
+        return L, U
+
+    def obtenerFactorizacionPALU(self):
+        P = np.identity(self.tamano)
+        L = np.zeros((self.tamano, self.tamano))
+        U = np.copy(self.A)
+
+        for j in range(0, self.tamano-1):
+            k = np.argmax(np.abs(U[j:self.tamano,j])) # maximo pivote por columna
+            k=k+j
+
+            # Permutar matriz Superior
+            U = self.__sistemaLineal__intercambiarFilas(U, j, k)
+
+            # Registrar permutaciones
+            P = self.__sistemaLineal__intercambiarFilas(P, j, k)
+
+            # Permutar matriz inferior
+            L = self.__sistemaLineal__intercambiarFilas(L, j, k)
+
+            for i in range(j+1, self.tamano):
+                mu = U[i,j]/U[j,j] # calculo de multiplicadores
+                U[i,:] = U[i,:] - (mu*U[j,:]) # multiplicacion por multiplicadores
+                L[i,j] = mu # registro de multiplicadores
+
+        L = np.identity(self.tamano) + L # sumar matriz identidad
+        return P, self.A, L, U
+
+    def obtenerFactorizacionDAlAu(self):
+        D = np.diagflat([self.A.diagonal()])
+        Al = (np.tril(self.A) - D ) * -1
+        Au = (np.triu(self.A) - D) * -1
+        return D, Al, Au
+
+    def resolverPorFactorizacionLU(self):
+        L, U = self.obtenerFactorizacionLU()
+        y = self.__sistemaLineal__resolverPorSustitucion(
+           self.__sistemaLineal__obtenerMatrizAumentada(L, self.b),
+           direction='haciaAdelante'
+        )
+        return self.__sistemaLineal__resolverPorSustitucion(
+            self.__sistemaLineal__obtenerMatrizAumentada(U, y),
+            direction='haciaAtras'
+        )
+
+    def resolverPorFactorizacionPALU(self):
+        P, A, L, U = self.obtenerFactorizacionPALU()
+        y = self.__sistemaLineal__resolverPorSustitucion(
+           self.__sistemaLineal__obtenerMatrizAumentada(L, np.matmul(P, self.b)),
+           direction='haciaAdelante'
+        )
+        return self.__sistemaLineal__resolverPorSustitucion(
+            self.__sistemaLineal__obtenerMatrizAumentada(U, y),
+            direction='haciaAtras'
+        )
+
+    def resolverPorMetodoJacobi(self, tolerancia=1e-10, iteraciones=100):
+        D = np.diagflat([self.A.diagonal()])
+        Au = (np.triu(self.A) - D) * -1
+        Al = (np.tril(self.A) - D ) * -1
+
+        if(self.__sistemasLineales__comprobarConvergencia(np.matmul(np.linalg.inv(D), (Al + Au))) == False):
+            raise ValueError('La matriz no converge a una solución')
+
+        x = np.ones(self.tamano)
+        # prev_x = np.zeros(self.tamano)
+
+        # iteración del método de Jacobi
+        for n in range(0, iteraciones):
+            prev_x = x
+            # encontrar x_k+1 mediante la ecuación de Jacobi
+            x = np.matmul(np.linalg.inv(D), np.matmul(Al + Au, x)) + np.matmul(np.linalg.inv(D), self.b)
+
+            if np.linalg.norm(x - prev_x) <= tolerancia:
+                break
+
+        return x
+        
+
+    def __sistemaLineal__esDiagonalDominante(self, A, estricto = False):
+        n = A.shape[1]
+
+        for i in range(0,n): # itera a través de cada fila
+             # obtiene la suma absoluta de todos los elementos de la fila menos el elemento diagonal
+            suma = np.sum(np.abs(A[i,:])) - np.abs(A[i,i])
+            # si la suma es mayor a la diagonal absoluta, la matriz no es diagonal dominante
+            if(suma >= np.abs(A[i,i]) if estricto else suma > np.abs(A[i,i])):
+                return False
+        return True
+
+
+    def __sistemaLineal__obtenerMatrizAumentada(self, matriz, columna):
+        return np.copy(np.c_[matriz, columna])
+
+    def __sistemaLineal__intercambiarFilas(self,matriz, posicion1, posicion2):
+      copy = np.copy(matriz)
+      aux = np.copy(matriz[posicion1,:])
+      copy[posicion1,:] = np.copy(copy[posicion2,:])
+      copy[posicion2,:] = np.copy(aux)
+      return copy
+    
+    def __sistemaLineal__resolverPorSustitucion(self, matriz, direction='haciaAtras'):
+      x = np.zeros(self.tamano)
+      rango = range(0, self.tamano) if direction == 'haciaAdelante' else range(self.tamano-1, -1, -1)
+      for i in rango:
+        x[i] = (matriz[i,self.tamano] - (np.sum(matriz[i,:self.tamano] * x))) / matriz[i, i]
+      return x
+
+    def __sistemasLineales__obtenerRadioEspectral(self, matriz):
+      valores, vectores = np.linalg.eig(matriz)
+      radioEspectral = np.max(np.abs(valores))
+      return radioEspectral
+
+    def __sistemasLineales__comprobarConvergencia(self, matriz):
+      radioEspectral = self.__sistemasLineales__obtenerRadioEspectral(matriz)
+      return radioEspectral < 1
+        
+
 """# Métodos directos
 
 ## Cálculo de Triangular superior
@@ -228,13 +405,11 @@ def comprobarMatrizDiagonalDominante(A, estricto = False):
             return False
     return True
 
-"""## Comprobar Convergencia
-
-Mediante el uso del radio espectral de una matriz, determina si un sistema de
-ecuaciones lineales converge a una solución o no.
-"""
-
 def comprobarConvergenciaSolucion(A):
+    """## Comprobar Convergencia
+    Mediante el uso del radio espectral de una matriz, determina si un sistema de
+    ecuaciones lineales converge a una solución o no.
+    """
     valores, vectores = np.linalg.eig(A) # determina los valores propios de la matriz
     radioEspectral = np.max(np.abs(valores)) # determina el radio espectral de la matriz
     print('Radio espectral: ', radioEspectral, 'converge:', radioEspectral <= 1)
@@ -270,9 +445,9 @@ def resolverJacobi(A, b, iteraciones):
     Au = (np.triu(A) - D) * -1
     Al = (np.tril(A) - D ) * -1
 
-    # if(comprobarConvergenciaSolucion(np.matmul(np.linalg.inv(D), (Al + Au))) == False):
-    #     print('La matriz no converge a una solución')
-    #     return
+    if(comprobarConvergenciaSolucion(np.matmul(np.linalg.inv(D), (Al + Au))) == False):
+        print('La matriz no converge a una solución')
+        return
 
     x = np.ones(n)
 
