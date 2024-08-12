@@ -12,9 +12,6 @@ import numpy as np
 class NoSolutionError(Exception): ...
 class SistemaLineal:
     def __init__(self, A, b):
-        self.A = A
-        self.b = b
-
         try:
             m, n = A.shape
             vector_size = b.size
@@ -27,6 +24,8 @@ class SistemaLineal:
         if(n!=vector_size):
             raise ValueError('El vector de términos independientes no es compatible con la matriz de coeficientes.')
 
+        self.A = A
+        self.b = b
         self.tamano = n
       
     def obtenerMatrizAumentada(self):
@@ -129,7 +128,7 @@ class SistemaLineal:
         Au = (np.triu(self.A) - D) * -1
         Al = (np.tril(self.A) - D ) * -1
 
-        if(self.__sistemasLineales__comprobarConvergencia(np.matmul(np.linalg.inv(D), (Al + Au))) == False):
+        if(self.__sistemaLineal__comprobarConvergencia(np.matmul(np.linalg.inv(D), (Al + Au))) == False):
             raise ValueError('La matriz no converge a una solución')
 
         x = np.ones(self.tamano)
@@ -176,13 +175,13 @@ class SistemaLineal:
         x[i] = (matriz[i,self.tamano] - (np.sum(matriz[i,:self.tamano] * x))) / matriz[i, i]
       return x
 
-    def __sistemasLineales__obtenerRadioEspectral(self, matriz):
+    def __sistemaLineal__obtenerRadioEspectral(self, matriz):
       valores, vectores = np.linalg.eig(matriz)
       radioEspectral = np.max(np.abs(valores))
       return radioEspectral
 
-    def __sistemasLineales__comprobarConvergencia(self, matriz):
-      radioEspectral = self.__sistemasLineales__obtenerRadioEspectral(matriz)
+    def __sistemaLineal__comprobarConvergencia(self, matriz):
+      radioEspectral = self.__sistemaLineal__obtenerRadioEspectral(matriz)
       return radioEspectral < 1
         
 
