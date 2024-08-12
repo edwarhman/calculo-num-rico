@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from sistemasLineales import SistemaLineal, resolverJacobi
+from sistemasLineales import SistemaLineal
 
 sistemasValidos = [
     (   
