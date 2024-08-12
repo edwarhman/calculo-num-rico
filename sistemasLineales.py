@@ -145,11 +145,52 @@ class SistemaLineal:
         expresionDeJacobi = self.__sistemaLineal__construirExpresionDeJacobi()
         return self.__sistemaLineal__aplicarMetodoIterativo(expresionDeJacobi, iteraciones, tolerancia)
 
+    def resolverPorMetodoGaussSeidel(self, iteraciones, tolerancia=1e-10):
+        '''
+        Obtiene la solución del sistema lineal mediante el método de Gauss-Seidel.
+        
+        Args:
+            iteraciones (int): Número de iteraciones del método.
+            tolerancia (float): Tolerancia para la convergencia del método.
+
+        Returns:
+            vector solución del sistema lineal (np.array).
+        '''
+        expresionDeGaussSeidel = self.__sistemaLineal__construirExpresionDeGaussSeidel()
+        return self.__sistemaLineal__aplicarMetodoIterativo(expresionDeGaussSeidel, iteraciones, tolerancia)
+
+    def resolverPorMetodoSOR(self, iteraciones, tolerancia=1e-10, w=0.5):
+        '''
+        Obtiene la solución del sistema lineal mediante el método de SOR.
+        
+        Args:
+            iteraciones (int): Número de iteraciones del método.
+            tolerancia (float): Tolerancia para la convergencia del método.
+            w (float): Peso del método.
+
+        Returns:
+            vector solución del sistema lineal (np.array).
+        '''
+        expresionDeSOR = self.__sistemaLineal__construirExpresionDeSOR(w)
+        return self.__sistemaLineal__aplicarMetodoIterativo(expresionDeSOR, iteraciones, tolerancia)
+
     def __sistemaLineal__construirExpresionDeJacobi(self):
         D, Al, Au = self.obtenerFactorizacionDAlAu()
         if(self.__sistemaLineal__comprobarConvergencia(np.matmul(np.linalg.inv(D), (Al + Au))) == False):
             raise ValueError('La matriz no converge a una solución')
         return lambda x: np.matmul(np.linalg.inv(D), np.matmul(Al + Au, x)) + np.matmul(np.linalg.inv(D), self.b)
+
+    def __sistemaLineal__construirExpresionDeGaussSeidel(self):
+        D, Al, Au = self.obtenerFactorizacionDAlAu()
+        if(self.__sistemaLineal__comprobarConvergencia(np.matmul(np.linalg.inv(D - Al), Au)) == False):
+            raise ValueError('La matriz no converge a una solución')
+        return lambda x: np.matmul(np.linalg.inv(D - Al), np.matmul(Au, x)) + np.matmul(np.linalg.inv(D - Al), self.b)
+
+    def __sistemaLineal__construirExpresionDeSOR(self, w):
+        D, Al, Au = self.obtenerFactorizacionDAlAu()
+        if(self.__sistemaLineal__comprobarConvergencia(np.matmul(np.linalg.inv(D - w*Al), w*Au + (1-w)*D)) == False):
+            raise ValueError('La matriz no converge a una solución')
+        return lambda x: np.matmul(np.linalg.inv(D - w*Al), np.matmul(w*Au + (1-w)*D, x)) + np.matmul(np.linalg.inv(D - w*Al), w*self.b)
 
     def __sistemaLineal__aplicarMetodoIterativo(self, metodo, iteraciones, tolerancia):
         x = np.ones(self.tamano)
