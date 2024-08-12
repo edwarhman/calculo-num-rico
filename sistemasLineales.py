@@ -142,26 +142,23 @@ class SistemaLineal:
         Returns:
             vector solución del sistema lineal (np.array).
         '''
-        D = np.diagflat([self.A.diagonal()])
-        Au = (np.triu(self.A) - D) * -1
-        Al = (np.tril(self.A) - D ) * -1
+        expresionDeJacobi = self.__sistemaLineal__construirExpresionDeJacobi()
+        return self.__sistemaLineal__aplicarMetodoIterativo(expresionDeJacobi, iteraciones, tolerancia)
 
+    def __sistemaLineal__construirExpresionDeJacobi(self):
+        D, Al, Au = self.obtenerFactorizacionDAlAu()
         if(self.__sistemaLineal__comprobarConvergencia(np.matmul(np.linalg.inv(D), (Al + Au))) == False):
             raise ValueError('La matriz no converge a una solución')
+        return lambda x: np.matmul(np.linalg.inv(D), np.matmul(Al + Au, x)) + np.matmul(np.linalg.inv(D), self.b)
 
+    def __sistemaLineal__aplicarMetodoIterativo(self, metodo, iteraciones, tolerancia):
         x = np.ones(self.tamano)
-
-        # iteración del método de Jacobi
-        for n in range(0, iteraciones):
-            prev_x = x
-            # encontrar x_k+1 mediante la ecuación de Jacobi
-            x = np.matmul(np.linalg.inv(D), np.matmul(Al + Au, x)) + np.matmul(np.linalg.inv(D), self.b)
-
-            if np.linalg.norm(x - prev_x) <= tolerancia:
+        for _ in range(0, iteraciones):
+            x_anterior = x
+            x = metodo(x)
+            if np.linalg.norm(x - x_anterior) <= tolerancia:
                 break
-
         return x
-        
 
     def __sistemaLineal__esDiagonalDominante(self, A, estricto = False):
         n = A.shape[1]
