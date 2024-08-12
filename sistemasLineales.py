@@ -28,99 +28,26 @@ class SistemaLineal:
         self.b = b
         self.tamano = n
       
-    def obtenerMatrizAumentada(self):
-        '''Obtiene la matriz aumentada que representa al sistema.'''
-        return self.__sistemaLineal__obtenerMatrizAumentada(self.A, self.b)
-
-    def obtenerMatrizTriangularSuperiorAumentada(self):
-        '''Obtiene la matriz triangular superior aumentada que representa al sistema.'''
-        triangularSuperior = self.obtenerMatrizAumentada()
-        for j in range(0, self.tamano-1): 
-          k = self.__sistemaLineal__obtenerPosicionMaximoPivotePorColumna(triangularSuperior, j)
-          triangularSuperior = self.__sistemaLineal__intercambiarFilas(triangularSuperior, j, k)
-          for i in range(j+1, self.tamano):
-            mu = triangularSuperior[i,j]/triangularSuperior[j,j] # calculo de multiplicadores
-            triangularSuperior[i,:] = triangularSuperior[i,:] - (mu*triangularSuperior[j,:])
-        return triangularSuperior
-
-    def obtenerFactorizacionLU(self):
-        '''Obtiene la factorizacion LU de la matriz de coeficientes A.'''
-        L = np.zeros((self.tamano, self.tamano))
-        U = np.copy(self.A)
-
-        for j in range(0, self.tamano-1):
-            for i in range(j+1, self.tamano):
-                if (U[j,j] == 0):
-                    raise ValueError('La matriz no posee factorizacion LU')
-                mu = U[i,j]/U[j,j] # calculo de multiplicadores
-                U[i,:] = U[i,:] - (mu*U[j,:]) # aplicar operación en fila
-                L[i,j] = mu # asignacion de multiplicador
-
-        L = np.identity(self.tamano) + L # sumar matriz identidad
-        return L, U
-
-    def obtenerFactorizacionPALU(self):
-        '''Obtiene la factorizacion PALU de la matriz de coeficientes A.'''
-        P = np.identity(self.tamano)
-        L = np.zeros((self.tamano, self.tamano))
-        U = np.copy(self.A)
-
-        for j in range(0, self.tamano-1):
-            k = self.__sistemaLineal__obtenerPosicionMaximoPivotePorColumna(U, j)
-
-            # Permutar matriz Superior
-            U = self.__sistemaLineal__intercambiarFilas(U, j, k)
-
-            # Registrar permutaciones
-            P = self.__sistemaLineal__intercambiarFilas(P, j, k)
-
-            # Permutar matriz inferior
-            L = self.__sistemaLineal__intercambiarFilas(L, j, k)
-
-            for i in range(j+1, self.tamano):
-                mu = U[i,j]/U[j,j] # calculo de multiplicadores
-                U[i,:] = U[i,:] - (mu*U[j,:]) # multiplicacion por multiplicadores
-                L[i,j] = mu # registro de multiplicadores
-
-        L = np.identity(self.tamano) + L # sumar matriz identidad
-        return P, self.A, L, U
-
-    def obtenerFactorizacionDAlAu(self):
-        '''Obtiene la factorizacion D-Al-Au de la matriz de coeficientes A.'''
-        D = np.diagflat([self.A.diagonal()])
-        Al = (np.tril(self.A) - D ) * -1
-        Au = (np.triu(self.A) - D) * -1
-        return D, Al, Au
-
     def resolverPorEliminacionGaussiana(self):
         '''Obtiene la resolución del sistema lineal mediante el método de eliminación gaussiana.'''
         matrizSuperiorAumentada = self.obtenerMatrizTriangularSuperiorAumentada()
-        solucion = self.__sistemaLineal__resolverPorSustitucion(matrizSuperiorAumentada, direction='haciaAtras')
-        return solucion
+        return self.__sistemaLineal__resolverPorSustitucion(matrizSuperiorAumentada, direction='haciaAtras')
 
     def resolverPorFactorizacionLU(self):
         '''Obtiene la solución del sistema lineal mediante el método de factorización LU.'''
         L, U = self.obtenerFactorizacionLU()
-        y = self.__sistemaLineal__resolverPorSustitucion(
-           self.__sistemaLineal__obtenerMatrizAumentada(L, self.b),
-           direction='haciaAdelante'
-        )
-        return self.__sistemaLineal__resolverPorSustitucion(
-            self.__sistemaLineal__obtenerMatrizAumentada(U, y),
-            direction='haciaAtras'
-        )
+        matrizPrimeraSustitucion = self.__sistemaLineal__obtenerMatrizAumentada(L, self.b)
+        y = self.__sistemaLineal__resolverPorSustitucion(matrizPrimeraSustitucion,direction='haciaAdelante')
+        matrizSegundaSustitucion = self.__sistemaLineal__obtenerMatrizAumentada(U, y)
+        return self.__sistemaLineal__resolverPorSustitucion(matrizSegundaSustitucion,direction='haciaAtras')
 
     def resolverPorFactorizacionPALU(self):
         '''Obtiene la solución del sistema lineal mediante el método de factorización PALU.'''
-        P, A, L, U = self.obtenerFactorizacionPALU()
-        y = self.__sistemaLineal__resolverPorSustitucion(
-           self.__sistemaLineal__obtenerMatrizAumentada(L, np.matmul(P, self.b)),
-           direction='haciaAdelante'
-        )
-        return self.__sistemaLineal__resolverPorSustitucion(
-            self.__sistemaLineal__obtenerMatrizAumentada(U, y),
-            direction='haciaAtras'
-        )
+        P, _, L, U = self.obtenerFactorizacionPALU()
+        matrizPrimeraSustitucion = self.__sistemaLineal__obtenerMatrizAumentada(L, np.matmul(P, self.b))
+        y = self.__sistemaLineal__resolverPorSustitucion(matrizPrimeraSustitucion,direction='haciaAdelante')
+        matrizSegunaSustitucion = self.__sistemaLineal__obtenerMatrizAumentada(U, y)
+        return self.__sistemaLineal__resolverPorSustitucion(matrizSegunaSustitucion,direction='haciaAtras')
 
     def resolverPorMetodoJacobi(self, tolerancia=1e-10, iteraciones=100):
         '''
@@ -165,6 +92,68 @@ class SistemaLineal:
         expresionDeSOR = self.__sistemaLineal__construirExpresionDeSOR(w)
         return self.__sistemaLineal__aplicarMetodoIterativo(expresionDeSOR, iteraciones, tolerancia)
 
+    def obtenerMatrizAumentada(self):
+        '''Obtiene la matriz aumentada que representa al sistema.'''
+        return self.__sistemaLineal__obtenerMatrizAumentada(self.A, self.b)
+
+    def obtenerMatrizTriangularSuperiorAumentada(self):
+        '''Obtiene la matriz triangular superior aumentada que representa al sistema.'''
+        triangularSuperior = self.obtenerMatrizAumentada()
+        for j in range(0, self.tamano-1): 
+          k = self.__sistemaLineal__obtenerPosicionMaximoPivotePorColumna(triangularSuperior, j)
+          triangularSuperior = self.__sistemaLineal__intercambiarFilas(triangularSuperior, j, k)
+          for i in range(j+1, self.tamano):
+            mu = triangularSuperior[i,j]/triangularSuperior[j,j] # calculo de multiplicadores
+            triangularSuperior[i,:] = triangularSuperior[i,:] - (mu*triangularSuperior[j,:])
+        return triangularSuperior
+
+    def obtenerFactorizacionLU(self):
+        '''Obtiene la factorizacion LU de la matriz de coeficientes A.'''
+        L = np.zeros((self.tamano, self.tamano))
+        U = np.copy(self.A)
+
+        for j in range(0, self.tamano-1):
+            for i in range(j+1, self.tamano):
+                if (U[j,j] == 0):
+                    raise ValueError('La matriz no posee factorizacion LU')
+                mu = U[i,j]/U[j,j] # calculo de multiplicadores
+                U[i,:] = U[i,:] - (mu*U[j,:]) # aplicar operación en fila
+                L[i,j] = mu # asignacion de multiplicador
+
+        L = np.identity(self.tamano) + L # sumar matriz identidad
+        return L, U
+
+    def obtenerFactorizacionPALU(self):
+        '''Obtiene la factorizacion PALU de la matriz de coeficientes A.'''
+        P = np.identity(self.tamano)
+        L = np.zeros((self.tamano, self.tamano))
+        U = np.copy(self.A)
+
+        for j in range(0, self.tamano-1):
+            k = self.__sistemaLineal__obtenerPosicionMaximoPivotePorColumna(U, j)
+
+            # Permutar matriz Superior
+            U = self.__sistemaLineal__intercambiarFilas(U, j, k)
+            # Registrar permutaciones
+            P = self.__sistemaLineal__intercambiarFilas(P, j, k)
+            # Permutar matriz inferior
+            L = self.__sistemaLineal__intercambiarFilas(L, j, k)
+
+            for i in range(j+1, self.tamano):
+                mu = U[i,j]/U[j,j] # calculo de multiplicadores
+                U[i,:] = U[i,:] - (mu*U[j,:]) # multiplicacion por multiplicadores
+                L[i,j] = mu # registro de multiplicadores
+
+        L = np.identity(self.tamano) + L # sumar matriz identidad
+        return P, self.A, L, U
+
+    def obtenerFactorizacionDAlAu(self):
+        '''Obtiene la factorizacion D-Al-Au de la matriz de coeficientes A.'''
+        D = np.diagflat([self.A.diagonal()])
+        Al = (np.tril(self.A) - D ) * -1
+        Au = (np.triu(self.A) - D) * -1
+        return D, Al, Au
+
     def __sistemaLineal__construirExpresionDeJacobi(self):
         D, Al, Au = self.obtenerFactorizacionDAlAu()
         if(self.__sistemaLineal__comprobarConvergencia(np.matmul(np.linalg.inv(D), (Al + Au))) == False):
@@ -191,17 +180,6 @@ class SistemaLineal:
             if np.linalg.norm(x - x_anterior) <= tolerancia:
                 break
         return x
-
-    def __sistemaLineal__esDiagonalDominante(self, A, estricto = False):
-        n = A.shape[1]
-
-        for i in range(0,n): # itera a través de cada fila
-             # obtiene la suma absoluta de todos los elementos de la fila menos el elemento diagonal
-            suma = np.sum(np.abs(A[i,:])) - np.abs(A[i,i])
-            # si la suma es mayor a la diagonal absoluta, la matriz no es diagonal dominante
-            if(suma >= np.abs(A[i,i]) if estricto else suma > np.abs(A[i,i])):
-                return False
-        return True
 
     def __sistemaLineal__obtenerPosicionMaximoPivotePorColumna(self, matriz, columna):
         '''Obtiene la posición del maximo pivote por columna.'''
@@ -234,3 +212,13 @@ class SistemaLineal:
       radioEspectral = self.__sistemaLineal__obtenerRadioEspectral(matriz)
       return radioEspectral < 1
  
+    def __sistemaLineal__esDiagonalDominante(self, A, estricto = False):
+        n = A.shape[1]
+
+        for i in range(0,n): # itera a través de cada fila
+             # obtiene la suma absoluta de todos los elementos de la fila menos el elemento diagonal
+            suma = np.sum(np.abs(A[i,:])) - np.abs(A[i,i])
+            # si la suma es mayor a la diagonal absoluta, la matriz no es diagonal dominante
+            if(suma >= np.abs(A[i,i]) if estricto else suma > np.abs(A[i,i])):
+                return False
+        return True
