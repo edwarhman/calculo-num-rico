@@ -201,14 +201,20 @@ class TestSistemasLineales:
         solution = sistema.resolver_por_factorizacion_palu()
         np.testing.assert_array_almost_equal(solution, expected_solution)
 
-    @pytest.mark.parametrize("A, b, expected_solution", sistemasConSolucionIterativa)
+    @pytest.mark.parametrize(
+        "A, b, expected_solution",
+        sistemasConSolucionIterativa
+    )
     def test_solver_metodo_jacobi(self, A, b, expected_solution):
         sistema = SistemaLineal(A, b)
         solution = sistema.resolver_por_metodo_jacobi(
             iteraciones=43, tolerancia=1e-6)
         np.testing.assert_allclose(solution, expected_solution, rtol=1e-6)
 
-    @pytest.mark.parametrize("A, b, expected_solution", sistemasConSolucionIterativa)
+    @pytest.mark.parametrize(
+        "A, b, expected_solution",
+        sistemasConSolucionIterativa
+    )
     def test_solver_metodo_gaussSeidel(self, A, b, expected_solution):
         sistema = SistemaLineal(A, b)
         solution = sistema.resolver_por_metodo_gauss_seidel(
@@ -216,7 +222,10 @@ class TestSistemasLineales:
         )
         np.testing.assert_allclose(solution, expected_solution, rtol=1e-6)
 
-    @pytest.mark.parametrize("A, b, expected_solution", sistemasConSolucionIterativa)
+    @pytest.mark.parametrize(
+        "A, b, expected_solution",
+        sistemasConSolucionIterativa
+    )
     def test_solver_metodo_sor(self, A, b, expected_solution):
         sistema = SistemaLineal(A, b)
         solution = sistema.resolver_por_metodo_sor(
