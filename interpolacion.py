@@ -8,34 +8,62 @@ Original file is located at
 """
 
 import numpy as np
-from sympy import symbols, plot, exp, cos, lambdify, latex, log
-from sistemasLineales import resolverSistemaEliminacionGaussiana
-import sys
+from sympy import symbols
+from sistemasLineales import SistemaLineal
 
-print(sys.path)
+
 xsym = symbols("x")
 
 
-def construirPolinomio(coeficientes, grado, sym):
-    poly = 0
-    for i in range(grado, -1, -1):
-        poly = poly + coeficientes[i] * (sym**i)
-    return poly
+class Polinomio:
+    def __init__(self, coeficientes):
+        self.coeficientes = coeficientes
+        self.grado = len(coeficientes) - 1
+        self.expresion = self.construir_polinomio()
+
+    def __str__(self):
+        return str(self.expresion)
+
+    def __repr__(self):
+        return str(self.expresion)
+
+    def construir_polinomio(self):
+        poly = 0
+        for i in range(self.grado, -1, -1):
+            poly = poly + self.coeficientes[i] * (xsym**i)
+        return poly
+
+    def evaluar_polinomio(self, x):
+        return self.expresion.subs(xsym, x)
 
 
-"""## Interpolaciòn Coeficientes ideterminados
+class Puntos:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
----
+    def __str__(self):
+        return str(self.x) + "\n" + str(self.y)
 
+    def __repr__(self):
+        return str(self.x) + "\n" + str(self.y)
 
-"""
+    @staticmethod
+    def construirDesdeExpresion(x, expresion):
+        y = expresion(x)
+        return Puntos(x, y)
+
+    @staticmethod
+    def construirDesdeTabla(tabla):
+        x = tabla[:, 0]
+        y = tabla[:, 1]
+        return Puntos(x, y)
 
 
 def interpolacionCoeficientesIdeterminados(x, y):
     X = np.vander(x, increasing=True)
-    ai = resolverSistemaEliminacionGaussiana(X, y)
-    poly = construirPolinomio(ai, len(ai) - 1, xsym)
-    return poly
+    coeficientes = SistemaLineal(X, y).resolver_por_factorizacion_palu()
+    return Polinomio(coeficientes)
 
 
 """## Polinomio interpolante de Lagrange"""
@@ -43,15 +71,15 @@ def interpolacionCoeficientesIdeterminados(x, y):
 
 def polinomioInterpolanteDeLagrange(x, y):
     n = x.size
-    sol = 0
+    coeficientes = 0
     for i in range(n):
-        l = 1
+        langraniano = 1
         for j in range(n):
             if j != i:
                 mul = (xsym - x[j]) / (x[i] - x[j])
-                l = l * mul
-        sol = sol + y[i] * l
-    return sol
+                langraniano = langraniano * mul
+        coeficientes = coeficientes + y[i] * langraniano
+    return Polinomio(coeficientes)
 
 
 """## Diferencias Divididas"""
@@ -59,11 +87,12 @@ def polinomioInterpolanteDeLagrange(x, y):
 
 def diferenciasDivididas(x, y):
     n = x.size
-    sol = np.copy(y)
+    coeficientes = np.copy(y)
 
     for i in range(1, n):
-        sol[i:n] = (sol[i:n] - sol[i - 1]) / (x[i:n] - x[i - 1])
-    return sol
+        coeficientes[i:n] = (coeficientes[i:n] -
+                             coeficientes[i - 1]) / (x[i:n] - x[i - 1])
+    return Polinomio(coeficientes)
 
 
 """## Polinomio Interpolante de Newton"""
@@ -71,15 +100,15 @@ def diferenciasDivididas(x, y):
 
 def polinomioInterpolanteDeNewton(x, y):
     n = x.size
-    sol = 0
+    coeficientes = 0
     c = diferenciasDivididas(x, y)
 
     for i in range(n):
         mul = 1
         for j in range(i):
             mul = mul * (xsym - x[j])
-        sol = sol + c[i] * mul
-    return sol
+        coeficientes = coeficientes + c[i] * mul
+    return Polinomio(coeficientes)
 
 
 """## Ajuste minimos cuadrados"""
@@ -109,11 +138,14 @@ def ajusteMinimosCuadrados(x, y, m):
             sumaVector = sumaVector + x[k] ** i * y[k]
         vector[i] = sumaVector
 
-    # Llenar la matriz inferrior de la matriz copiando la transpuesta de la matriz y restando la diagonal principal
+    # Llenar la matriz inferrior de la matriz copiando la transpuesta
+    #  de la matriz y restando la diagonal principal
     matriz = matriz + matriz.transpose() - np.diag(matriz.diagonal())
-    # asignamos a la primera celda de la matriz el numero de coeficientes que queremos encontrar
+    # asignamos a la primera celda de la matriz el numero de coeficientes
+    # que queremos encontrar
     matriz[0, 0] = n
 
-    # Encontramos y devolvemos los coeficientes a resolviendo el sistema de ecuaciones lineales
-    ai = resolverSistemaEliminacionGaussiana(matriz, vector)
-    return ai
+    # Encontramos y devolvemos los coeficientes a resolviendo el sistema
+    #  de ecuaciones lineales
+    polinomio = SistemaLineal(matriz, vector).resolver_por_factorizacion_palu()
+    return Polinomio(polinomio)
