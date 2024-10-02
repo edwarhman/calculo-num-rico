@@ -132,4 +132,4 @@ def resolverSistemaNoLinealNewton(F, x, x0, tol=1e-6, maxIter=1000):
     y = np.linalg.solve(J, -F_e)
     x = x + y
     k = k + 1
-  return x
+  return x, k
