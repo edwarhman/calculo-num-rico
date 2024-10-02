@@ -65,7 +65,7 @@ class SistemaLineal:
             matrizSegunaSustitucion, direction="haciaAtras"
         )
 
-    def resolver_por_metodo_jacobi(self, tolerancia=1e-10, iteraciones=100, x=None):
+    def resolver_por_metodo_jacobi(self, tolerancia=1e-10, iteraciones=100, vector_inicial=None):
         """
         Obtiene la solución del sistema lineal mediante el método iterativo de Jacobi.
 
@@ -76,14 +76,14 @@ class SistemaLineal:
         Returns:
             vector solución del sistema lineal (np.array).
         """
-        if x is None:
-            x = np.ones(self.tamano)
+        if vector_inicial is None:
+            vector_inicial = np.ones(self.tamano)
         expresionDeJacobi = self.__construir_expresion_jacobi()
         return self.__aplicar_metodo_iterativo(
-            expresionDeJacobi,x, iteraciones, tolerancia
+            expresionDeJacobi,vector_inicial, iteraciones, tolerancia
         )
 
-    def resolver_por_metodo_gauss_seidel(self, iteraciones=100, tolerancia=1e-10, x=None):
+    def resolver_por_metodo_gauss_seidel(self, iteraciones=100, tolerancia=1e-10, vector_inicial=None):
         """
         Obtiene la solución del sistema lineal mediante el método
         de Gauss-Seidel.
@@ -95,14 +95,14 @@ class SistemaLineal:
         Returns:
             vector solución del sistema lineal (np.array).
         """
-        if x is None:
-            x = np.ones(self.tamano)
+        if vector_inicial is None:
+            vector_inicial = np.ones(self.tamano)
         expresionDeGaussSeidel = self.__construir_expresion_gauss_seidel()
         return self.__aplicar_metodo_iterativo(
-            expresionDeGaussSeidel, x, iteraciones, tolerancia
+            expresionDeGaussSeidel, vector_inicial, iteraciones, tolerancia
         )
 
-    def resolver_por_metodo_sor(self, iteraciones=100, tolerancia=1e-10, w=0.5, x=None):
+    def resolver_por_metodo_sor(self, iteraciones=100, tolerancia=1e-10, w=0.5, vector_inicial=None):
         """
         Obtiene la solución del sistema lineal mediante el método de SOR.
 
@@ -114,11 +114,11 @@ class SistemaLineal:
         Returns:
             vector solución del sistema lineal (np.array).
         """
-        if x is None:
-            x = np.ones(self.tamano)
+        if vector_inicial is None:
+            vector_inicial = np.ones(self.tamano)
 
         expresionDeSOR = self.__construir_expresion_sor(w)
-        return self.__aplicar_metodo_iterativo(expresionDeSOR,x, iteraciones, tolerancia)
+        return self.__aplicar_metodo_iterativo(expresionDeSOR,vector_inicial, iteraciones, tolerancia)
 
     def obtener_matriz_aumentada(self):
         """Obtiene la matriz aumentada que representa al sistema."""

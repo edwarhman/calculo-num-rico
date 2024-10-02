@@ -208,7 +208,7 @@ class TestSistemasLineales:
     def test_solver_metodo_jacobi(self, A, b, expected_solution):
         sistema = SistemaLineal(A, b)
         solution = sistema.resolver_por_metodo_jacobi(
-            iteraciones=43, tolerancia=1e-6)
+            iteraciones=43, tolerancia=1e-6, vector_inicial=np.ones(sistema.tamano))
         np.testing.assert_allclose(solution, expected_solution, rtol=1e-6)
 
     @pytest.mark.parametrize(
@@ -218,7 +218,7 @@ class TestSistemasLineales:
     def test_solver_metodo_gaussSeidel(self, A, b, expected_solution):
         sistema = SistemaLineal(A, b)
         solution = sistema.resolver_por_metodo_gauss_seidel(
-            iteraciones=11, tolerancia=1e-6
+            iteraciones=11, tolerancia=1e-6, vector_inicial=np.ones(sistema.tamano)
         )
         np.testing.assert_allclose(solution, expected_solution, rtol=1e-6)
 
@@ -229,6 +229,6 @@ class TestSistemasLineales:
     def test_solver_metodo_sor(self, A, b, expected_solution):
         sistema = SistemaLineal(A, b)
         solution = sistema.resolver_por_metodo_sor(
-            iteraciones=11, tolerancia=1e-7, w=0.999, x=np.ones(sistema.tamano)
+            iteraciones=11, tolerancia=1e-7, w=0.999, vector_inicial=np.ones(sistema.tamano)
         )
         np.testing.assert_allclose(solution, expected_solution, rtol=1e-6)
