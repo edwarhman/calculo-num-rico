@@ -229,6 +229,6 @@ class TestSistemasLineales:
     def test_solver_metodo_sor(self, A, b, expected_solution):
         sistema = SistemaLineal(A, b)
         solution = sistema.resolver_por_metodo_sor(
-            iteraciones=11, tolerancia=1e-7, w=0.999
+            iteraciones=11, tolerancia=1e-7, w=0.999, x=np.ones(sistema.tamano)
         )
         np.testing.assert_allclose(solution, expected_solution, rtol=1e-6)
