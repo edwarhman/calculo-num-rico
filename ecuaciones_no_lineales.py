@@ -1,5 +1,4 @@
 import numpy as np
-from sistemasLineales import SistemaLineal
 
 def resolverEcuacionBiseccion(f, a, b, tol, Iter = 100):
   c = a + (1/2)*(b - a)
@@ -130,8 +129,7 @@ def resolverSistemaNoLinealNewton(F, x, x0, tol=1e-6, maxIter=1000):
       break
     J = jacobiana(F, x)
     F_e = np.array(list(map(lambda f: f(x), F)))
-    sistema = SistemaLineal(J, -F_e)
-    y = sistema.resolver_por_factorizacion_palu()
+    y = np.linalg.solve(J, -F_e)
     x = x + y
     k = k + 1
   return x
