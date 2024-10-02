@@ -121,9 +121,9 @@ def jacobiana(F, x):
       J[i,j] = grad(F[i],x)[j]
   return J
 
-def resolverSistemaNoLinealNewton(F, x, tol, maxIter):
+def resolverSistemaNoLinealNewton(F, x, x0, tol=1e-6, maxIter=1000):
   k = 0
-  y = np.ones(len(x))
+  y = x0
   while np.linalg.norm(y) >= tol:
     if (k >= maxIter):
       print('Se alcanzo el máximo número de iteraciones')
